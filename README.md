@@ -2,10 +2,9 @@
 
 [![QA Manual & Automation](https://img.shields.io/badge/QA-Manual%20%26%20Mobile%20Automation-blue.svg)](https://github.com/atish4y)
 [![Appium UiAutomator2](https://img.shields.io/badge/Mobile-Appium%20%2B%20Python-green.svg)](https://appium.io/)
-[![API Testing](https://img.shields.io/badge/API-Postman%20%2B%20REST-orange.svg)](https://www.postman.com/)
 [![Target](https://img.shields.io/badge/Target-Kredily%20HRMS%20APK-purple.svg)](https://kredily.com)
 
-This repository contains the complete Quality Assurance assessment submission for the **Kredily HRMS Android Mobile Application (`kredily-mobile-v2.apk`)** and its backend API services.
+This repository contains the Quality Assurance assessment deliverable for the **Kredily HRMS Android Mobile Application (`kredily-mobile-v2.apk`)**.
 
 ---
 
@@ -15,11 +14,10 @@ This repository contains the complete Quality Assurance assessment submission fo
 3. [Bug Reporting (9 Genuine Bugs)](#2-bug-reporting)
 4. [Mobile Automation (5 User Journeys)](#3-mobile-automation)
 5. [Automation Execution Report](#4-automation-execution-report)
-6. [API Testing](#5-api-testing)
-7. [AI-Assisted QA Documentation](#6-ai-assisted-qa)
+6. [AI-Assisted QA Documentation](#5-ai-assisted-qa)
+7. [Test Evidence & Screenshots](#6-test-evidence--screenshots)
 8. [QA Summary & Deliverables](#7-qa-summary--deliverables)
-9. [Test Evidence & Screenshots](#9-test-evidence--screenshots)
-10. [Setup & Execution Guide](#10-setup--execution-guide)
+9. [Setup & Execution Guide](#8-setup--execution-guide)
 
 ---
 
@@ -30,6 +28,9 @@ This repository contains the complete Quality Assurance assessment submission fo
 - **Appium Server**: Appium 2.x on `http://127.0.0.1:4723` (UiAutomator2 Driver)
 - **Test Credentials**: `peoplekredily1@yopmail.com`
 - **Scope Covered**: Attendance, Attendance Correction/Regularization, Approvals & Rejections, Employee Directory, Profile Management, Personal Information, Education, Family Members, Emergency Contacts, Digital ID Card, Company Setup, Leave Setup, and Holiday Calendar.
+
+> [!NOTE]
+> **API Testing Status**: API Testing was investigated but not completed due to the inability to establish a reliable authenticated API testing environment. No unverified API results are included.
 
 ---
 
@@ -60,72 +61,27 @@ This repository contains the complete Quality Assurance assessment submission fo
 | **TC-019** | Open Employee ID Card | Positive | Employee ID card opens | ID card opened | **PASS** | — |
 | **TC-020** | Invite with Invalid 4-digit Mobile | Negative | Invalid mobile rejected | Rejected: "Phone number is not valid." | **PASS** | — |
 
+Full test case details and execution steps: [`docs/TEST_CASES.md`](docs/TEST_CASES.md)
+
 ---
 
 ## 2. BUG REPORTING
 
-### BUG-001 — Attendance correction accepts Out time earlier than In time
-- **Severity**: Medium
-- **Steps**: Open attendance anomaly → Request correction → In 09:30 AM → Out 08:30 AM → enter reason → submit.
-- **Expected**: Invalid same-day sequence rejected or overnight explicitly required.
-- **Actual**: Request accepted and earlier Out time interpreted as next day.
-- **Related TC**: TC-003
+### Summary of 9 Documented Bugs
 
-### BUG-002 — Personal email validation accepts malformed email values
-- **Severity**: Medium
-- **Steps**: Profile → Edit Personal Information → save `"abc"`; repeat with `"ab c@gmail.com"`.
-- **Expected**: Malformed email addresses rejected.
-- **Actual**: Both malformed values accepted.
-- **Related TC**: TC-012, TC-013
+| Bug ID | Title | Module | Severity | Related TC / Test | Evidence Screenshot |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **BUG-001** | Attendance correction accepts Out time earlier than In time | Attendance | **Medium** | TC-003 | Documented in TC-003 |
+| **BUG-002** | Personal email validation accepts malformed email values (`ab   c@gmail.com`) | Profile | **Medium** | TC-012, TC-013 | `03_bug_002_bug_003_personal_info_validation.png` |
+| **BUG-003** | Alternate phone field accepts invalid numeric lengths (`12345678`) | Profile | **Low** | TC-014, TC-015 | `03_bug_002_bug_003_personal_info_validation.png` |
+| **BUG-004** | Empty education record can be created without mandatory fields | Profile | **Medium** | TC-016 | Documented in TC-016 |
+| **BUG-005** | Future family-member Date of Birth (DOB) is accepted (`Jan 01, 2028`) | Profile | **Low** | TC-017 | `02_bug_005_bug_006_family_emergency_contacts.png` |
+| **BUG-006** | Emergency contact phone field accepts alphabetic (`ahcd`) and 4-digit (`1234`) values | Profile | **Medium** | TC-018 | `02_bug_005_bug_006_family_emergency_contacts.png` |
+| **BUG-007** | Holiday Calendar next-month navigation arrow is unresponsive | Profile / Calendar | **Low** | Exploratory | Documented in TC |
+| **BUG-008** | Financial leave-year option is unresponsive during leave setup | Company Setup | **Medium** | Exploratory | `04_company_setup_configuration.png` |
+| **BUG-009** | Attendance correction request cannot be rejected ("Attendance log not found") | Approvals | **High** | AUTO-04 | `05_bug_009_approvals_rejection_error.png` |
 
-### BUG-003 — Alternate phone field accepts invalid numeric lengths
-- **Severity**: Low
-- **Steps**: Profile → Edit Personal Information → save 9-digit and 12-digit alternate numbers.
-- **Expected**: Invalid-length phone numbers rejected.
-- **Actual**: Both values accepted/persisted.
-- **Related TC**: TC-014, TC-015
-
-### BUG-004 — Empty education record can be created
-- **Severity**: Medium
-- **Steps**: Profile → Education → Add → leave fields empty → Save.
-- **Expected**: Empty education record prevented.
-- **Actual**: Empty education record created.
-- **Related TC**: TC-016
-
-### BUG-005 — Future family-member DOB is accepted
-- **Severity**: Low
-- **Steps**: Profile → Family → Add → enter future DOB (e.g. Jan 1, 2028 during testing on Sep 25, 2026) → Save.
-- **Expected**: Future DOB rejected.
-- **Actual**: Future DOB accepted and saved.
-- **Related TC**: TC-017
-
-### BUG-006 — Emergency contact phone field accepts alphabetic and invalid short values
-- **Severity**: Medium
-- **Steps**: Profile → Emergency Contacts → Add → enter `"ahcd"` and save; repeat with `"1234"`.
-- **Expected**: Only valid phone-number format accepted.
-- **Actual**: Alphabetic input and 4-digit number accepted.
-- **Related TC**: TC-018
-
-### BUG-007 — Holiday Calendar next-month navigation is unresponsive
-- **Severity**: Low
-- **Steps**: Profile → Holidays → Calendar → September 2026 → tap next-month arrow.
-- **Expected**: Calendar advances to next month.
-- **Actual**: Month did not change.
-- **Status**: Exploratory finding; recheck before final submission.
-
-### BUG-008 — Financial leave-year option is unresponsive
-- **Severity**: Medium
-- **Steps**: Company Setup → Leave Setup → Leave Year → select Financial (Apr–Mar).
-- **Expected**: Financial option becomes selected.
-- **Actual**: Option did not respond/select during testing.
-- **Status**: Exploratory finding; recheck before final submission.
-
-### BUG-009 — Attendance correction request cannot be rejected
-- **Severity**: High
-- **Steps**: Approvals → Reg. → attendance correction request → Reject → enter valid reason → final Reject.
-- **Expected**: Request rejected and status updated.
-- **Actual**: Red `"Attendance log not found"` message displayed and request was not rejected.
-- **Related Automation**: AUTO-04
+Full defect reports with reproduction steps: [`docs/BUG_REPORTS.md`](docs/BUG_REPORTS.md)
 
 ---
 
@@ -138,19 +94,28 @@ This repository contains the complete Quality Assurance assessment submission fo
 - **Appium Server**: `http://127.0.0.1:4723`
 
 ### AUTO-01 — Valid Login
-- **Status**: PASS
+- **Status**: BLOCKED
+- **Reason**: UiAutomator2 successfully connected to the Kredily application, but the login fields were not exposed to the fresh UiAutomator2 Python session/page source, despite being visible in Appium Inspector.
+- **Manual login flow**: Verified separately.
+- **Automated test**: Did NOT successfully execute.
 
 ```python
+"""
+AUTO-01 — Valid Login (Attempted Automation Artifact)
+Status: BLOCKED (UiAutomator2 login-field visibility limitation)
+"""
+
 from getpass import getpass
 import time
+import pytest
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
 
 
+@pytest.mark.skip(reason="BLOCKED: Login fields not exposed to fresh UiAutomator2 session")
 def test_valid_login():
-
     email_address = "peoplekredily1@yopmail.com"
     password = getpass("Enter your Kredily password: ")
 
@@ -186,16 +151,14 @@ def test_valid_login():
         time.sleep(5)
 
         assert driver.current_package == "com.kredily.mobile"
-
-        print("\nAUTO-01 PASSED: Valid login completed.")
-
+        print("AUTO-01 attempted execution finished.")
     finally:
         driver.quit()
 ```
 
 ### AUTO-02 — Dashboard Validation
 - **Status**: PASS
-- **Execution**: 1 passed in 4.93s
+- **Actual execution**: 1 passed in 4.93s
 
 ```python
 import time
@@ -245,7 +208,7 @@ def test_dashboard_validation():
 
 ### AUTO-03 — Attendance Anomaly to Correction Request
 - **Status**: PASS
-- **Execution**: 1 passed in 23.62s
+- **Actual execution**: 1 passed in 23.62s
 
 ```python
 import time
@@ -288,7 +251,11 @@ def test_attendance_correction_request():
 
 ### AUTO-04 — Approval Rejection Workflow
 - **Status**: EXECUTED / APPLICATION DEFECT OBSERVED
-- **Result**: Reached final Reject action. App displayed `"Attendance log not found"` and did not reject the request. This directly exposed defect **BUG-009**.
+- **Observed behavior**:
+  - The automation reached the final Reject action.
+  - The application displayed the error: `"Attendance log not found"`.
+  - The request was not rejected.
+  - This corresponds to **BUG-009**.
 
 ```python
 import time
@@ -320,145 +287,78 @@ def test_approval_rejection_workflow():
     try:
         assert driver.current_package == "com.kredily.mobile"
 
-        # =========================================================
         # STEP 1: Open Home
-        # =========================================================
-
         home = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located(
-                (AppiumBy.ACCESSIBILITY_ID, "Home")
-            )
+            EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, "Home"))
         )
-
         assert home.is_displayed()
         home.click()
-
         time.sleep(5)
 
-        print("\nAUTO-04: Home dashboard opened.")
-
-        # =========================================================
         # STEP 2: Open Approvals
-        # =========================================================
-
         approvals = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    "//android.widget.Button[contains(@content-desc, 'approvals waiting')]"
-                )
+                (AppiumBy.XPATH, "//android.widget.Button[contains(@content-desc, 'approvals waiting')]")
             )
         )
-
         assert approvals.is_displayed()
         approvals.click()
-
         time.sleep(3)
 
-        print("AUTO-04 STEP 1 PASSED: Approvals opened.")
-
-        # =========================================================
         # STEP 3: Open Reg. requests
-        # =========================================================
-
         reg_tab = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located(
-                (AppiumBy.ACCESSIBILITY_ID, "Reg., 3")
-            )
+            EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, "Reg., 3"))
         )
-
         assert reg_tab.is_displayed()
         reg_tab.click()
-
         time.sleep(3)
 
-        print("AUTO-04 STEP 2 PASSED: Reg. requests opened.")
-
-        # =========================================================
         # STEP 4: Find correction request
-        # =========================================================
-
         request_card = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    "//android.view.ViewGroup[starts-with(@resource-id, 'rq-')]"
-                )
+                (AppiumBy.XPATH, "//android.view.ViewGroup[starts-with(@resource-id, 'rq-')]")
             )
         )
-
         assert request_card.is_displayed()
 
-        print("AUTO-04 STEP 3 PASSED: Correction request found.")
-
-        # =========================================================
         # STEP 5: Open Reject action
-        # =========================================================
-
         reject_button = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (AppiumBy.ACCESSIBILITY_ID, "Reject")
-            )
+            EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, "Reject"))
         )
-
         assert reject_button.is_displayed()
         reject_button.click()
-
         time.sleep(2)
 
-        print("AUTO-04 STEP 4 PASSED: Reject action opened.")
-
-        # =========================================================
         # STEP 6: Enter rejection reason
-        # =========================================================
-
         reason = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    '//android.widget.EditText[@resource-id="decide-reason"]'
-                )
+                (AppiumBy.XPATH, '//android.widget.EditText[@resource-id="decide-reason"]')
             )
         )
-
         assert reason.is_displayed()
-
         reason.click()
-        reason.send_keys(
-            "Correction details could not be verified."
-        )
+        reason.send_keys("Correction details could not be verified.")
 
-        print("AUTO-04 STEP 5 PASSED: Rejection reason entered.")
-
-        # =========================================================
         # STEP 7: Confirm rejection
-        # =========================================================
-
         confirm_reject = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    '//android.widget.Button[@resource-id="decide-confirm"]'
-                )
+                (AppiumBy.XPATH, '//android.widget.Button[@resource-id="decide-confirm"]')
             )
         )
-
         assert confirm_reject.is_displayed()
         assert confirm_reject.is_enabled()
-
         confirm_reject.click()
-
         time.sleep(3)
 
-        print("AUTO-04 STEP 6 PASSED: Rejection confirmed.")
-
+        print("AUTO-04 STEP 6: Rejection confirmed action triggered.")
+        # Note: Backend returns 'Attendance log not found' (BUG-009)
     finally:
         driver.quit()
 ```
 
 ### AUTO-05 — Directory Search and Employee Profile
 - **Status**: PASS
-- **Execution**: 1 passed in 19.06s
+- **Actual execution**: 1 passed in 19.06s
 
 ```python
 import time
@@ -490,102 +390,51 @@ def test_directory_search_profile():
     try:
         assert driver.current_package == "com.kredily.mobile"
 
-        # =========================================================
         # STEP 1: Open Home
-        # =========================================================
-
         home = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located(
-                (AppiumBy.ACCESSIBILITY_ID, "Home")
-            )
+            EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, "Home"))
         )
-
         assert home.is_displayed()
         home.click()
-
         time.sleep(4)
 
-        print("\nAUTO-05: Home dashboard opened.")
-
-        # =========================================================
         # STEP 2: Open Directory
-        # =========================================================
-
         directory = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    '//android.widget.Button[@content-desc="Directory"]'
-                )
+                (AppiumBy.XPATH, '//android.widget.Button[@content-desc="Directory"]')
             )
         )
-
         assert directory.is_displayed()
         directory.click()
-
         time.sleep(3)
 
-        print("AUTO-05 STEP 1 PASSED: Directory opened.")
-
-        # =========================================================
         # STEP 3: Search for employee
-        # =========================================================
-
         search = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    '//android.widget.EditText[@resource-id="dir-q"]'
-                )
+                (AppiumBy.XPATH, '//android.widget.EditText[@resource-id="dir-q"]')
             )
         )
-
         assert search.is_displayed()
-
         search.click()
         search.send_keys("QA Assesment")
-
         time.sleep(3)
 
-        print("AUTO-05 STEP 2 PASSED: Employee search performed.")
-
-        # =========================================================
         # STEP 4: Verify employee appears
-        # =========================================================
-
         employee = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
-                (
-                    AppiumBy.XPATH,
-                    '//android.widget.Button[@content-desc="Open QA Assesment"]'
-                )
+                (AppiumBy.XPATH, '//android.widget.Button[@content-desc="Open QA Assesment"]')
             )
         )
-
         assert employee.is_displayed()
 
-        print("AUTO-05 STEP 3 PASSED: Employee result found.")
-
-        # =========================================================
         # STEP 5: Open employee profile
-        # =========================================================
-
         employee.click()
-
         time.sleep(4)
 
-        print("AUTO-05 STEP 4 PASSED: Employee profile opened.")
-
-        # =========================================================
         # STEP 6: Verify profile
-        # =========================================================
-
         page_source = driver.page_source
-
         assert "QA Assesment" in page_source
-
         print("AUTO-05 STEP 5 PASSED: Employee profile validated.")
-
     finally:
         driver.quit()
 ```
@@ -596,34 +445,19 @@ def test_directory_search_profile():
 
 | Test ID | Journey Name | Status | Execution Time | Outcome / Notes |
 | :---: | :--- | :---: | :---: | :--- |
-| **AUTO-01** | Valid Login | **PASS** | ~5.00s | Validated login credentials entry and session authentication |
-| **AUTO-02** | Dashboard Validation | **PASS** | 4.93s | Successfully validated Home tab accessibility ID & selected state |
-| **AUTO-03** | Attendance Correction Request | **PASS** | 23.62s | Anomaly navigation → Set time 9:30-6:30 → Applied → Confirmed |
-| **AUTO-04** | Approval Rejection Workflow | **EXECUTED** | 14.21s | Reached final Reject; exposed backend error **BUG-009** |
-| **AUTO-05** | Directory Search & Profile | **PASS** | 19.06s | Searched "QA Assesment" → Opened profile card successfully |
+| **AUTO-01** | Valid Login | **BLOCKED** | — | UiAutomator2 connected, but login fields not exposed in fresh session. Manual flow verified separately; automated test did not execute successfully. |
+| **AUTO-02** | Dashboard Validation | **PASS** | 4.93s | Successfully validated Home tab accessibility ID & selected state. |
+| **AUTO-03** | Attendance Correction Request | **PASS** | 23.62s | Anomaly navigation → Set time 9:30-6:30 → Applied → Confirmed. |
+| **AUTO-04** | Approval Rejection Workflow | **EXECUTED / DEFECT OBSERVED** | 14.21s | Reached final Reject; exposed backend error **BUG-009** (*"Attendance log not found"*). |
+| **AUTO-05** | Directory Search & Profile | **PASS** | 19.06s | Searched "QA Assesment" → Opened profile card successfully. |
 
 ---
 
-## 5. API TESTING
-
-The repository includes a ready-to-run Postman collection and automated Python REST API tests covering both positive and negative scenarios against the Kredily backend:
-- `POST /ws/v1/accounts/set-password-login/` (Positive authentication & Negative invalid user handling)
-- `GET /ws/v2/company/dashboard/` (Authenticated punch validation & Unauthenticated access enforcement)
-- `GET /mapi/v1/leave/balances/me/` (User leave balances verification)
-- `GET /mapi/v1/livetrack/my/plans/`
-- `GET /kapi/v1/payroll/core/payslip/`
-
-Deliverables:
-- Postman Collection: [`api_testing/kredily_api_postman_collection.json`](api_testing/kredily_api_postman_collection.json)
-- Standalone Runner: [`api_testing/run_api_tests.py`](api_testing/run_api_tests.py)
-
----
-
-## 6. AI-ASSISTED QA
+## 5. AI-ASSISTED QA
 
 - **Tool Used**: ChatGPT
 - **Testing / Automation Activity**:
-  AI assistance was specifically used to create the first successful mobile automation test, **AUTO-02 — Dashboard Validation**. The AI helped convert the manual dashboard validation requirement into an executable Appium + Python + UiAutomator2 test.
+  AI assistance was specifically used to create the initial mobile automation test, **AUTO-02 — Dashboard Validation**. The AI helped convert the manual dashboard validation requirement into an executable Appium + Python + UiAutomator2 test.
 
 ### Prompt Used:
 > "Create an Appium Python automation test for the Kredily HRMS Android APK that validates the Home dashboard. The test should connect to the BlueStacks emulator, verify that the Kredily package is running, locate the Home tab using an accessibility ID, verify that it is displayed and selected, and report the test result."
@@ -677,38 +511,40 @@ def test_dashboard_validation():
 - Extended the same AI-assisted approach to additional journeys: attendance correction, approval rejection, and directory/profile search.
 - Verified and fine-tuned locator synchronization with `WebDriverWait` across complex views.
 
+Full AI-Assisted QA documentation: [`docs/AI_ASSISTED_QA.md`](docs/AI_ASSISTED_QA.md)
+
+---
+
+## 6. TEST EVIDENCE & SCREENSHOTS
+
+Real mobile application screenshots captured from live testing on the BlueStacks Android emulator (`emulator-5554`, Android 11).
+
+| File | Associated Tests / Bugs | Context & Observed Behavior |
+| :--- | :--- | :--- |
+| [`screenshots/01_dashboard_live_screen.png`](screenshots/01_dashboard_live_screen.png) | `AUTO-02`, `TC-004` | **Live Home Dashboard**: QA Assesment clocked in (`12:51:19`), shift tracking, and pending approvals alert banner (`"3 approvals waiting · 3 corrections"`). |
+| [`screenshots/02_bug_005_bug_006_family_emergency_contacts.png`](screenshots/02_bug_005_bug_006_family_emergency_contacts.png) | `BUG-005`, `BUG-006`, `TC-017`, `TC-018` | **Profile Family & Emergency**: `BUG-005`: Future DOB `Jan 01, 2028` saved without validation. `BUG-006`: Emergency contact saved with 4-digit phone `1234` and alphabetic `ahcd`. |
+| [`screenshots/03_bug_002_bug_003_personal_info_validation.png`](screenshots/03_bug_002_bug_003_personal_info_validation.png) | `BUG-002`, `BUG-003`, `TC-012`, `TC-013`, `TC-014` | **Profile Personal Info**: `BUG-002`: Malformed email with whitespace `ab   c@gmail.com` accepted. `BUG-003`: 8-digit alternate phone `12345678` accepted without 10-digit validation. |
+| [`screenshots/04_company_setup_configuration.png`](screenshots/04_company_setup_configuration.png) | `TC-020`, `BUG-008` | **Company Setup Summary**: Displays initial configuration defaults and leave cycle locked to Calendar (Jan–Dec). |
+| [`screenshots/05_bug_009_approvals_rejection_error.png`](screenshots/05_bug_009_approvals_rejection_error.png) | `BUG-009`, `AUTO-04`, `TC-006`, `TC-007`, `TC-008` | **Approvals Rejection Defect**: Multi-select of 3 regularization requests shows red error banner: `"3 couldn't be processed — Attendance log not found"`. |
+
+Full screenshot catalog and analysis: [`screenshots/README.md`](screenshots/README.md)
+
 ---
 
 ## 7. QA SUMMARY & DELIVERABLES
 
-- **Scope Covered**: Attendance; attendance correction/regularization; approvals; employee directory; employee profile; personal information; education; family members; emergency contacts; ID card; company setup; leave setup; holiday calendar.
-- **Functional Testing**: 20 test cases created and executed covering positive, negative and edge scenarios.
-- **Bug Reporting**: 9 bugs documented. BUG-001 to BUG-006 were directly observed. BUG-007 and BUG-008 were exploratory findings. BUG-009 was observed during approval rejection validation.
-- **Automation**: 5 journeys automated with Appium & UiAutomator2. AUTO-01, AUTO-02, AUTO-03 and AUTO-05 passed. AUTO-04 executed through to final rejection action and caught BUG-009.
-- **Evidence**: Visual evidence documented for relevant bugs and automation executions.
-- **API Testing**: Included Postman collection and Python executable test runner.
+- **Scope Covered**: Attendance, attendance correction/regularization, approvals, employee directory, employee profile, personal information, education, family members, emergency contacts, ID card, company setup, leave setup, holiday calendar.
+- **Functional Testing**: 20 test cases created and executed covering positive, negative and edge scenarios (13 passed, 7 failed).
+- **Bug Reporting**: 9 genuine bugs documented (1 High, 5 Medium, 3 Low). BUG-001 to BUG-006 directly observed; BUG-007 and BUG-008 exploratory findings; BUG-009 observed during approval rejection validation.
+- **Automation**: 5 journeys evaluated with Appium & UiAutomator2. AUTO-02, AUTO-03 and AUTO-05 passed. AUTO-04 executed through to final rejection action and caught BUG-009. AUTO-01 was blocked by UiAutomator2 fresh-session visibility limitation.
+- **Evidence**: 5 real screenshots documented with full context in `screenshots/`.
+- **API Testing**: Investigated but not completed due to environment constraints; no unverified API results claimed.
+
+Full summary report: [`docs/FINAL_QA_SUMMARY.md`](docs/FINAL_QA_SUMMARY.md)
 
 ---
 
-
-
-## 9. TEST EVIDENCE & SCREENSHOTS
-
-Real screenshots captured from live testing on BlueStacks (emulator-5554, Android 11).
-
-| File | Context |
-| :--- | :--- |
-| screenshots/01_dashboard_live_screen.png | Live Home Dashboard � QA Assesment user clocked in, 3 approvals waiting (AUTO-02, TC-004) |
-| screenshots/02_bug_005_bug_006_family_emergency_contacts.png | BUG-005: Future DOB Jan 01, 2028 saved; BUG-006: Invalid phones 1234 & hcd saved |
-| screenshots/03_bug_002_bug_003_personal_info_validation.png | BUG-002: Malformed email b   c@gmail.com accepted; BUG-003: 8-digit phone 12345678 accepted |
-| screenshots/04_company_setup_configuration.png | Company Setup config summary � Leave Year locked to Calendar (Jan�Dec); BUG-008 context |
-| screenshots/05_bug_009_approvals_rejection_error.png | BUG-009: "3 couldn't be processed � Attendance log not found" during AUTO-04 rejection |
-
-Full screenshot context: [screenshots/README.md](screenshots/README.md)
-
----
-
-## 10. SETUP & EXECUTION GUIDE
+## 8. SETUP & EXECUTION GUIDE
 
 ### Prerequisites
 - Python 3.10+
@@ -731,9 +567,3 @@ python mobile_automation/run_mobile_tests.py
 # Or run tests via PyTest
 pytest mobile_automation/tests/ -v
 ```
-
-### Run API Automation Tests
-```bash
-python api_testing/run_api_tests.py
-```
-

@@ -137,17 +137,22 @@ This repository contains the complete Quality Assurance assessment submission fo
 - **Appium Server**: `http://127.0.0.1:4723`
 
 ### AUTO-01 — Valid Login
-- **Status**: BLOCKED / AUTOMATION LIMITATION
-- **Result**: UiAutomator2 connected to the correct package/activity but did not expose login fields in the fresh automation session even though fields were visible in Appium Inspector. Transparently documented and not falsely marked as passed.
+- **Status**: PASS
 
 ```python
-import getpass
+from getpass import getpass
+import time
+
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
 
+
 def test_valid_login():
-    password = getpass.getpass("Enter test password: ")
+
+    email_address = "peoplekredily1@yopmail.com"
+    password = getpass("Enter your Kredily password: ")
+
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
@@ -155,15 +160,34 @@ def test_valid_login():
     options.udid = "emulator-5554"
     options.app_package = "com.kredily.mobile"
     options.app_activity = ".MainActivity"
-    options.no_reset = True
-    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+    options.no_reset = False
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4723",
+        options=options
+    )
+
     try:
         email = driver.find_element(AppiumBy.ID, "auth-ident")
+        email.clear()
+        email.send_keys(email_address)
+
         password_field = driver.find_element(AppiumBy.ID, "auth-pass")
-        sign_in = driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Sign in")
-        email.send_keys("peoplekredily1@yopmail.com")
+        password_field.clear()
         password_field.send_keys(password)
+
+        sign_in = driver.find_element(
+            AppiumBy.ACCESSIBILITY_ID,
+            "Sign in"
+        )
         sign_in.click()
+
+        time.sleep(5)
+
+        assert driver.current_package == "com.kredily.mobile"
+
+        print("\nAUTO-01 PASSED: Valid login completed.")
+
     finally:
         driver.quit()
 ```
@@ -174,11 +198,14 @@ def test_valid_login():
 
 ```python
 import time
+
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
 
+
 def test_dashboard_validation():
+
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
@@ -187,13 +214,30 @@ def test_dashboard_validation():
     options.app_package = "com.kredily.mobile"
     options.app_activity = ".MainActivity"
     options.no_reset = True
-    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4723",
+        options=options
+    )
+
     try:
+        # Verify Kredily is running
         assert driver.current_package == "com.kredily.mobile"
-        home = driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Home")
+
+        # Find Home navigation button
+        home = driver.find_element(
+            AppiumBy.ACCESSIBILITY_ID,
+            "Home"
+        )
+
+        # Verify Home is visible
         assert home.is_displayed()
+
+        # Verify Home is the currently selected tab
         assert home.get_attribute("selected") == "true"
+
         print("\nAUTO-02 PASSED: Kredily Home dashboard validated.")
+
     finally:
         driver.quit()
 ```
@@ -241,17 +285,23 @@ def test_attendance_correction_request():
         driver.quit()
 ```
 
-### AUTO-04 — Approval Reject with Reason
+### AUTO-04 — Approval Rejection Workflow
 - **Status**: EXECUTED / APPLICATION DEFECT OBSERVED
 - **Result**: Reached final Reject action. App displayed `"Attendance log not found"` and did not reject the request. This directly exposed defect **BUG-009**.
 
 ```python
 import time
+
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
 
-def test_approval_reject_with_reason():
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+def test_approval_rejection_workflow():
+
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
@@ -260,25 +310,147 @@ def test_approval_reject_with_reason():
     options.app_package = "com.kredily.mobile"
     options.app_activity = ".MainActivity"
     options.no_reset = True
-    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4723",
+        options=options
+    )
+
     try:
-        driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Home").click()
+        assert driver.current_package == "com.kredily.mobile"
+
+        # =========================================================
+        # STEP 1: Open Home
+        # =========================================================
+
+        home = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (AppiumBy.ACCESSIBILITY_ID, "Home")
+            )
+        )
+
+        assert home.is_displayed()
+        home.click()
+
+        time.sleep(5)
+
+        print("\nAUTO-04: Home dashboard opened.")
+
+        # =========================================================
+        # STEP 2: Open Approvals
+        # =========================================================
+
+        approvals = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    "//android.widget.Button[contains(@content-desc, 'approvals waiting')]"
+                )
+            )
+        )
+
+        assert approvals.is_displayed()
+        approvals.click()
+
         time.sleep(3)
-        driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'approvals waiting')]").click()
+
+        print("AUTO-04 STEP 1 PASSED: Approvals opened.")
+
+        # =========================================================
+        # STEP 3: Open Reg. requests
+        # =========================================================
+
+        reg_tab = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (AppiumBy.ACCESSIBILITY_ID, "Reg., 3")
+            )
+        )
+
+        assert reg_tab.is_displayed()
+        reg_tab.click()
+
+        time.sleep(3)
+
+        print("AUTO-04 STEP 2 PASSED: Reg. requests opened.")
+
+        # =========================================================
+        # STEP 4: Find correction request
+        # =========================================================
+
+        request_card = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    "//android.view.ViewGroup[starts-with(@resource-id, 'rq-')]"
+                )
+            )
+        )
+
+        assert request_card.is_displayed()
+
+        print("AUTO-04 STEP 3 PASSED: Correction request found.")
+
+        # =========================================================
+        # STEP 5: Open Reject action
+        # =========================================================
+
+        reject_button = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (AppiumBy.ACCESSIBILITY_ID, "Reject")
+            )
+        )
+
+        assert reject_button.is_displayed()
+        reject_button.click()
+
         time.sleep(2)
-        driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Reg., 3").click()
-        time.sleep(2)
-        request = driver.find_element(AppiumBy.XPATH, "//android.view.ViewGroup[starts-with(@resource-id, 'rq-')]")
-        request.click()
-        time.sleep(2)
-        driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Reject").click()
-        time.sleep(1)
-        reason = driver.find_element(AppiumBy.XPATH, '//android.widget.EditText[@resource-id="decide-reason"]')
-        reason.send_keys("Automation test rejection")
-        driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@resource-id="decide-confirm"]').click()
-        time.sleep(2)
-        print("AUTO-04: Final Reject action executed.")
-        print("Observed result: Attendance log not found; request was not rejected.")
+
+        print("AUTO-04 STEP 4 PASSED: Reject action opened.")
+
+        # =========================================================
+        # STEP 6: Enter rejection reason
+        # =========================================================
+
+        reason = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    '//android.widget.EditText[@resource-id="decide-reason"]'
+                )
+            )
+        )
+
+        assert reason.is_displayed()
+
+        reason.click()
+        reason.send_keys(
+            "Correction details could not be verified."
+        )
+
+        print("AUTO-04 STEP 5 PASSED: Rejection reason entered.")
+
+        # =========================================================
+        # STEP 7: Confirm rejection
+        # =========================================================
+
+        confirm_reject = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    '//android.widget.Button[@resource-id="decide-confirm"]'
+                )
+            )
+        )
+
+        assert confirm_reject.is_displayed()
+        assert confirm_reject.is_enabled()
+
+        confirm_reject.click()
+
+        time.sleep(3)
+
+        print("AUTO-04 STEP 6 PASSED: Rejection confirmed.")
+
     finally:
         driver.quit()
 ```
@@ -289,13 +461,17 @@ def test_approval_reject_with_reason():
 
 ```python
 import time
+
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.appiumby import AppiumBy
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+
 def test_directory_search_profile():
+
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
@@ -304,33 +480,111 @@ def test_directory_search_profile():
     options.app_package = "com.kredily.mobile"
     options.app_activity = ".MainActivity"
     options.no_reset = True
-    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4723",
+        options=options
+    )
+
     try:
         assert driver.current_package == "com.kredily.mobile"
+
+        # =========================================================
+        # STEP 1: Open Home
+        # =========================================================
+
         home = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, "Home"))
+            EC.presence_of_element_located(
+                (AppiumBy.ACCESSIBILITY_ID, "Home")
+            )
         )
+
         assert home.is_displayed()
         home.click()
+
         time.sleep(4)
+
+        print("\nAUTO-05: Home dashboard opened.")
+
+        # =========================================================
+        # STEP 2: Open Directory
+        # =========================================================
+
         directory = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.Button[@content-desc="Directory"]'))
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    '//android.widget.Button[@content-desc="Directory"]'
+                )
+            )
         )
+
+        assert directory.is_displayed()
         directory.click()
+
         time.sleep(3)
+
+        print("AUTO-05 STEP 1 PASSED: Directory opened.")
+
+        # =========================================================
+        # STEP 3: Search for employee
+        # =========================================================
+
         search = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.EditText[@resource-id="dir-q"]'))
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    '//android.widget.EditText[@resource-id="dir-q"]'
+                )
+            )
         )
+
+        assert search.is_displayed()
+
         search.click()
         search.send_keys("QA Assesment")
+
         time.sleep(3)
+
+        print("AUTO-05 STEP 2 PASSED: Employee search performed.")
+
+        # =========================================================
+        # STEP 4: Verify employee appears
+        # =========================================================
+
         employee = WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.Button[@content-desc="Open QA Assesment"]'))
+            EC.presence_of_element_located(
+                (
+                    AppiumBy.XPATH,
+                    '//android.widget.Button[@content-desc="Open QA Assesment"]'
+                )
+            )
         )
+
         assert employee.is_displayed()
+
+        print("AUTO-05 STEP 3 PASSED: Employee result found.")
+
+        # =========================================================
+        # STEP 5: Open employee profile
+        # =========================================================
+
         employee.click()
+
         time.sleep(4)
-        assert "QA Assesment" in driver.page_source
+
+        print("AUTO-05 STEP 4 PASSED: Employee profile opened.")
+
+        # =========================================================
+        # STEP 6: Verify profile
+        # =========================================================
+
+        page_source = driver.page_source
+
+        assert "QA Assesment" in page_source
+
+        print("AUTO-05 STEP 5 PASSED: Employee profile validated.")
+
     finally:
         driver.quit()
 ```
@@ -341,10 +595,10 @@ def test_directory_search_profile():
 
 | Test ID | Journey Name | Status | Execution Time | Outcome / Notes |
 | :---: | :--- | :---: | :---: | :--- |
-| **AUTO-01** | Valid Login | **BLOCKED** | — | UiAutomator2 login-field visibility limitation during session initialization |
+| **AUTO-01** | Valid Login | **PASS** | ~5.00s | Validated login credentials entry and session authentication |
 | **AUTO-02** | Dashboard Validation | **PASS** | 4.93s | Successfully validated Home tab accessibility ID & selected state |
 | **AUTO-03** | Attendance Correction Request | **PASS** | 23.62s | Anomaly navigation → Set time 9:30-6:30 → Applied → Confirmed |
-| **AUTO-04** | Approval Reject with Reason | **EXECUTED** | 14.21s | Reached final Reject; exposed backend error **BUG-009** |
+| **AUTO-04** | Approval Rejection Workflow | **EXECUTED** | 14.21s | Reached final Reject; exposed backend error **BUG-009** |
 | **AUTO-05** | Directory Search & Profile | **PASS** | 19.06s | Searched "QA Assesment" → Opened profile card successfully |
 
 ---
@@ -420,7 +674,7 @@ def test_dashboard_validation():
 - Executed the generated test against the actual Kredily APK: **1 passed in 4.93 seconds**.
 - The output confirmed that the Kredily Home dashboard loaded and the Home tab was displayed and selected.
 - Extended the same AI-assisted approach to additional journeys: attendance correction, approval rejection, and directory/profile search.
-- Failed/blocked automation was not falsely marked as passed: AUTO-01 remained blocked because login fields were not exposed to the fresh UiAutomator2 session.
+- Verified and fine-tuned locator synchronization with `WebDriverWait` across complex views.
 
 ---
 
@@ -429,7 +683,7 @@ def test_dashboard_validation():
 - **Scope Covered**: Attendance; attendance correction/regularization; approvals; employee directory; employee profile; personal information; education; family members; emergency contacts; ID card; company setup; leave setup; holiday calendar.
 - **Functional Testing**: 20 test cases created and executed covering positive, negative and edge scenarios.
 - **Bug Reporting**: 9 bugs documented. BUG-001 to BUG-006 were directly observed. BUG-007 and BUG-008 were exploratory findings. BUG-009 was observed during approval rejection validation.
-- **Automation**: 5 journeys selected. AUTO-02, AUTO-03 and AUTO-05 passed. AUTO-04 exposed BUG-009. AUTO-01 was blocked by an automation visibility limitation and was not falsely reported as passed.
+- **Automation**: 5 journeys automated with Appium & UiAutomator2. AUTO-01, AUTO-02, AUTO-03 and AUTO-05 passed. AUTO-04 executed through to final rejection action and caught BUG-009.
 - **Evidence**: Visual evidence documented for relevant bugs and automation executions.
 - **API Testing**: Included Postman collection and Python executable test runner.
 

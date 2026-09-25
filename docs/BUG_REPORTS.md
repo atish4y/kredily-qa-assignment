@@ -6,17 +6,17 @@ This document contains **9 genuine bugs and anomalies** identified during the ma
 
 ## 🐞 Bug Summary Matrix
 
-| Bug ID | Title | Module | Severity | Related TC / Test | Status |
-| :--- | :--- | :--- | :---: | :---: | :---: |
-| **BUG-001** | Attendance correction accepts Out time earlier than In time | Attendance | **Medium** | TC-003 | Open |
-| **BUG-002** | Personal email validation accepts malformed email values | Profile | **Medium** | TC-012, TC-013 | Open |
-| **BUG-003** | Alternate phone field accepts invalid numeric lengths (9 & 12 digits) | Profile | **Low** | TC-014, TC-015 | Open |
-| **BUG-004** | Empty education record can be created without mandatory fields | Profile | **Medium** | TC-016 | Open |
-| **BUG-005** | Future family-member Date of Birth (DOB) is accepted and saved | Profile | **Low** | TC-017 | Open |
-| **BUG-006** | Emergency contact phone field accepts alphabetic and short values | Profile | **Medium** | TC-018 | Open |
-| **BUG-007** | Holiday Calendar next-month navigation arrow is unresponsive | Profile / Calendar | **Low** | Exploratory | Open |
-| **BUG-008** | Financial leave-year option is unresponsive during leave setup | Company Setup | **Medium** | Exploratory | Open |
-| **BUG-009** | Attendance correction request cannot be rejected ("Attendance log not found") | Approvals | **High** | AUTO-04 | Open |
+| Bug ID | Title | Module | Severity | Related TC / Test | Evidence Screenshot |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **BUG-001** | Attendance correction accepts Out time earlier than In time | Attendance | **Medium** | TC-003 | Documented in TC-003 |
+| **BUG-002** | Personal email validation accepts malformed email values (`ab   c@gmail.com`) | Profile | **Medium** | TC-012, TC-013 | `03_bug_002_bug_003_personal_info_validation.png` |
+| **BUG-003** | Alternate phone field accepts invalid numeric lengths (`12345678`) | Profile | **Low** | TC-014, TC-015 | `03_bug_002_bug_003_personal_info_validation.png` |
+| **BUG-004** | Empty education record can be created without mandatory fields | Profile | **Medium** | TC-016 | Documented in TC-016 |
+| **BUG-005** | Future family-member Date of Birth (DOB) is accepted (`Jan 01, 2028`) | Profile | **Low** | TC-017 | `02_bug_005_bug_006_family_emergency_contacts.png` |
+| **BUG-006** | Emergency contact phone field accepts alphabetic (`ahcd`) and 4-digit (`1234`) values | Profile | **Medium** | TC-018 | `02_bug_005_bug_006_family_emergency_contacts.png` |
+| **BUG-007** | Holiday Calendar next-month navigation arrow is unresponsive | Profile / Calendar | **Low** | Exploratory | Documented in TC |
+| **BUG-008** | Financial leave-year option is unresponsive during leave setup | Company Setup | **Medium** | Exploratory | `04_company_setup_configuration.png` |
+| **BUG-009** | Attendance correction request cannot be rejected ("Attendance log not found") | Approvals | **High** | AUTO-04 | `05_bug_009_approvals_rejection_error.png` |
 
 ---
 
@@ -43,9 +43,6 @@ Same-day time sequences where Out time is chronologically earlier than In time m
 #### Actual Result:
 The request was accepted without validation or warning. The system silently interpreted the earlier Out time as belonging to the next day, resulting in unintended 23-hour work duration calculations.
 
-#### Evidence:
-See screenshot: `screenshots/bug_001_time_sequence.png`
-
 ---
 
 ### BUG-002: Personal Email Validation Accepts Malformed Email Values
@@ -58,7 +55,7 @@ See screenshot: `screenshots/bug_001_time_sequence.png`
 1. Navigate to **Profile** → **Edit Personal Information**.
 2. In the **Personal Email** field, type `"abc"` (missing `@` and domain).
 3. Tap **Save**.
-4. Repeat the test with `"ab c@gmail.com"` (space character inside username).
+4. Repeat the test with `"ab   c@gmail.com"` (space characters inside username).
 5. Tap **Save**.
 
 #### Expected Result:
@@ -67,8 +64,9 @@ Email validation regex must conform to RFC 5322. Both values must be blocked wit
 #### Actual Result:
 Both malformed values were successfully saved and persisted to the user profile without any client or backend validation errors.
 
-#### Evidence:
-See screenshot: `screenshots/bug_002_malformed_email.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/03_bug_002_bug_003_personal_info_validation.png`
+- **Observed Value**: The saved Personal Information card explicitly displays `Personal email: ab   c@gmail.com`.
 
 ---
 
@@ -80,19 +78,18 @@ See screenshot: `screenshots/bug_002_malformed_email.png`
 
 #### Steps to Reproduce:
 1. Navigate to **Profile** → **Edit Personal Information**.
-2. Enter a 9-digit number (e.g., `987654321`) in **Alternate Phone Number**.
+2. Enter an invalid length number (e.g., 8 digits: `12345678` or 9 digits: `987654321`) in **Alternate Phone Number**.
 3. Tap **Save**.
-4. Re-open and enter a 12-digit number (e.g., `987654321012`).
-5. Tap **Save**.
 
 #### Expected Result:
 System should enforce standard 10-digit mobile number validation (or E.164 standard with country code).
 
 #### Actual Result:
-Both 9-digit and 12-digit numbers were accepted and persisted to the profile database.
+The short number was accepted and persisted to the profile database without constraint.
 
-#### Evidence:
-See screenshot: `screenshots/bug_003_alternate_phone.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/03_bug_002_bug_003_personal_info_validation.png`
+- **Observed Value**: The saved Contact card explicitly displays `Alternate phone: 12345678`.
 
 ---
 
@@ -113,9 +110,6 @@ Mandatory field validation should prevent submission and highlight missing field
 #### Actual Result:
 An empty education record row was generated and added to the employee profile.
 
-#### Evidence:
-See screenshot: `screenshots/bug_004_empty_education.png`
-
 ---
 
 ### BUG-005: Future Family-Member Date of Birth (DOB) Is Accepted
@@ -127,7 +121,7 @@ See screenshot: `screenshots/bug_004_empty_education.png`
 #### Steps to Reproduce:
 1. Navigate to **Profile** → **Family**.
 2. Tap **Add Family Member**.
-3. In Date of Birth field, pick a future date (e.g., `January 1, 2028` during September 2026 testing).
+3. In Date of Birth field, pick a future date (e.g., `Jan 01, 2028` during September 2026 testing).
 4. Tap **Save**.
 
 #### Expected Result:
@@ -136,8 +130,9 @@ Date picker should disallow dates past today's date, or save action should rejec
 #### Actual Result:
 Future DOB was accepted and saved to the family member profile without validation.
 
-#### Evidence:
-See screenshot: `screenshots/bug_005_future_dob.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/02_bug_005_bug_006_family_emergency_contacts.png`
+- **Observed Value**: Family member card displays: `"test person - Father · DOB Jan 01, 2028"`.
 
 ---
 
@@ -148,21 +143,22 @@ See screenshot: `screenshots/bug_005_future_dob.png`
 - **Related Test Case**: [TC-018](TEST_CASES.md#tc-018--save-emergency-contact-with-a-4-digit-phone-number)
 
 #### Steps to Reproduce:
-1. Navigate to **Profile** → **Emergency Contacts**.
+1. Navigate to **Profile** → **Family & Emergency Contacts**.
 2. Tap **Add Emergency Contact**.
-3. Enter name: `"Emergency Contact"`.
-4. Enter phone number: `"ahcd"` (alphabetic string).
-5. Tap **Save**.
-6. Repeat with 4-digit number `"1234"` and tap **Save**.
+3. Enter name: `"test"`, Relation: `"Mother"`, Phone: `1234` (4 digits) → Tap **Save**.
+4. Repeat with name: `"test"`, Relation: `"Son"`, Phone: `"ahcd"` (alphabetic string) → Tap **Save**.
 
 #### Expected Result:
 Phone input must enforce numeric keypad input and validate minimum 10 digits.
 
 #### Actual Result:
-Both `"ahcd"` and `"1234"` were accepted and stored as emergency contact numbers.
+Both `"1234"` and alphabetic `"ahcd"` were accepted and stored as emergency contact numbers.
 
-#### Evidence:
-See screenshot: `screenshots/bug_006_emergency_phone.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/02_bug_005_bug_006_family_emergency_contacts.png`
+- **Observed Values**: Emergency contacts list shows:
+  - `"test · Mother · 1234"`
+  - `"test · Son · ahcd"`
 
 ---
 
@@ -183,9 +179,6 @@ Calendar month transitions to October 2026 and displays upcoming company holiday
 #### Actual Result:
 The next-month navigation arrow icon is completely unresponsive to tap events. The view remains locked to September 2026.
 
-#### Evidence:
-See screenshot: `screenshots/bug_007_holiday_calendar.png`
-
 ---
 
 ### BUG-008: Financial Leave-Year Option Is Unresponsive
@@ -204,31 +197,34 @@ The Financial (Apr–Mar) option should become selected and adjust cycle calcula
 #### Actual Result:
 The radio selection event did not trigger or update during testing; the option stayed unselected.
 
-#### Evidence:
-See screenshot: `screenshots/bug_008_leave_year_financial.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/04_company_setup_configuration.png`
+- **Observed Value**: Leave Year remained locked to `"Calendar (Jan–Dec)"`.
 
 ---
 
 ### BUG-009: Attendance Correction Request Cannot Be Rejected ("Attendance log not found")
 - **Bug ID**: `BUG-009`
 - **Severity**: **High**
-- **Module**: Approvals → Regularization
-- **Related Test / Automation**: AUTO-04 (`test_approval_reject_with_reason`)
+- **Module**: Approvals → Regularization (`Reg., 3`)
+- **Related Test / Automation**: `AUTO-04` (`test_approval_rejection_workflow`)
+- **Related Test Cases**: TC-006, TC-007, TC-008
 
 #### Steps to Reproduce:
 1. Navigate to **Approvals** → **Reg.** (Regularization requests).
-2. Select a pending attendance correction request.
+2. Select pending attendance correction requests (e.g., 3 requests for Sep 22, 23, and 24).
 3. Tap **Reject**.
-4. In the decision modal (`decide-reason`), enter a valid rejection reason: `"Automation test rejection"`.
+4. In the decision modal (`decide-reason`), enter a valid rejection reason: `"Correction details could not be verified."`.
 5. Tap the confirmation button (`decide-confirm`).
 
 #### Expected Result:
-Request is successfully rejected. The status updates to `Rejected` and the item is cleared from the pending approval queue.
+Requests are successfully rejected. The status updates to `Rejected` and the items are cleared from the pending approval queue.
 
 #### Actual Result:
-App displays a red error banner: **"Attendance log not found"**. The rejection is aborted and the request remains permanently stuck in pending state.
+App displays a prominent red banner:
+> **`"3 couldn't be processed — Attendance log not found"`**
+The rejection is aborted and the requests remain permanently stuck in pending state.
 
-#### Evidence:
-Captured during Appium test execution `AUTO-04`:
-- Execution log: Reached `decide-confirm`, backend threw `"Attendance log not found"`.
-- See screenshot: `screenshots/bug_009_attendance_reject.png`
+#### Evidence & Context:
+- **Screenshot**: `../screenshots/05_bug_009_approvals_rejection_error.png`
+- **Observed UI**: Rejection attempt triggered red error banner `"3 couldn't be processed — Attendance log not found"` with all 3 cards remaining selected in the queue.

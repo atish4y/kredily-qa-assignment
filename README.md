@@ -18,7 +18,8 @@ This repository contains the complete Quality Assurance assessment submission fo
 6. [API Testing](#5-api-testing)
 7. [AI-Assisted QA Documentation](#6-ai-assisted-qa)
 8. [QA Summary & Deliverables](#7-qa-summary--deliverables)
-9. [Setup & Execution Guide](#8-setup--execution-guide)
+9. [Test Evidence & Screenshots](#9-test-evidence--screenshots)
+10. [Setup & Execution Guide](#10-setup--execution-guide)
 
 ---
 
@@ -689,7 +690,25 @@ def test_dashboard_validation():
 
 ---
 
-## 8. SETUP & EXECUTION GUIDE
+
+
+## 9. TEST EVIDENCE & SCREENSHOTS
+
+Real screenshots captured from live testing on BlueStacks (emulator-5554, Android 11).
+
+| File | Context |
+| :--- | :--- |
+| screenshots/01_dashboard_live_screen.png | Live Home Dashboard — QA Assesment user clocked in, 3 approvals waiting (AUTO-02, TC-004) |
+| screenshots/02_bug_005_bug_006_family_emergency_contacts.png | BUG-005: Future DOB Jan 01, 2028 saved; BUG-006: Invalid phones 1234 & hcd saved |
+| screenshots/03_bug_002_bug_003_personal_info_validation.png | BUG-002: Malformed email b   c@gmail.com accepted; BUG-003: 8-digit phone 12345678 accepted |
+| screenshots/04_company_setup_configuration.png | Company Setup config summary — Leave Year locked to Calendar (Jan–Dec); BUG-008 context |
+| screenshots/05_bug_009_approvals_rejection_error.png | BUG-009: "3 couldn't be processed — Attendance log not found" during AUTO-04 rejection |
+
+Full screenshot context: [screenshots/README.md](screenshots/README.md)
+
+---
+
+## 10. SETUP & EXECUTION GUIDE
 
 ### Prerequisites
 - Python 3.10+
@@ -717,3 +736,4 @@ pytest mobile_automation/tests/ -v
 ```bash
 python api_testing/run_api_tests.py
 ```
+
